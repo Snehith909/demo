@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>FindIt – AI Lost & Found</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#f3f6fd;--card:#fff;--tx:#14213d;--mu:#6b7690;--bd:#e2e8f5;--pr:#1f5eea;--gn:#e3f6ea;--gt:#1c8a4a;--rd:#fde8e8;--rt:#d23a3a;--in:#f6f8fd}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d1220;--card:#171e31;--tx:#eaf0ff;--mu:#93a0bf;--bd:#27314b;--pr:#5b8cff;--gn:#12301f;--gt:#5fd38d;--rd:#3a1a1a;--rt:#ff8a8a;--in:#10162a}}
+*,*:before,*:after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+body{margin:0;height:100%;background:var(--bg);color:var(--tx);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;justify-content:center}
+#app{width:100%;max-width:430px;height:100%;display:flex;flex-direction:column;background:var(--bg);position:relative}
+main{flex:1;overflow-y:auto;padding:16px}
+.top{display:flex;align-items:center;gap:10px;padding:12px 16px;font-weight:600;background:var(--card);border-bottom:1px solid var(--bd)}
+.top button{background:none;border:0;color:var(--tx);font-size:20px;cursor:pointer;padding:4px 8px}
+nav{display:flex;background:var(--card);border-top:1px solid var(--bd)}
+nav button{flex:1;background:none;border:0;padding:9px 0;color:var(--mu);font-size:12px;cursor:pointer}
+nav button.on{color:var(--pr);font-weight:700}nav span{display:block;font-size:19px}
+h1{font-size:26px;margin:0 0 4px}h2{font-size:20px;margin:0 0 6px}
+.mu{color:var(--mu);font-size:13px}.c{text-align:center}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:12px;margin-bottom:12px}
+.btn{display:block;width:100%;padding:13px;border:0;border-radius:10px;background:var(--pr);color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:10px}
+.btn.o{background:none;border:1.5px solid var(--pr);color:var(--pr)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,.sw:focus-visible{outline:3px solid var(--pr);outline-offset:2px}
+label{display:block;font-weight:600;font-size:13px;margin:12px 0 5px}
+input,select,textarea{width:100%;padding:11px;border:1px solid var(--bd);border-radius:10px;background:var(--in);color:var(--tx);font:inherit}
+.big{border-radius:18px;padding:22px 16px;margin-bottom:14px;cursor:pointer;border:0;width:100%;text-align:left;color:var(--tx);font:inherit}
+.big b{display:block;font-size:19px;margin:6px 0 2px}
+.row{display:flex;gap:12px;align-items:center}
+.th{width:62px;height:62px;border-radius:10px;background:var(--in) center/cover;flex:none;display:grid;place-items:center;font-size:26px}
+.pill{display:inline-block;padding:2px 9px;border-radius:99px;font-size:12px;font-weight:600;background:var(--in);color:var(--mu)}
+.pill.g{background:var(--gn);color:var(--gt)}.pill.b{background:#dce7ff;color:#1f4fc0}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid var(--bd);cursor:pointer;padding:0}.sw.on{outline:3px solid var(--pr);outline-offset:2px}
+.up{border:2px dashed var(--bd);border-radius:14px;height:130px;display:grid;place-items:center;background:var(--in) center/cover;cursor:pointer;color:var(--mu);text-align:center}
+.tabs{display:flex;border-bottom:1px solid var(--bd);margin-bottom:12px}.tabs button{flex:1;padding:10px;background:none;border:0;border-bottom:3px solid transparent;color:var(--mu);font-weight:600;cursor:pointer}.tabs .on{color:var(--pr);border-color:var(--pr)}
+.bar{height:6px;border-radius:9px;background:var(--bd);overflow:hidden;margin:4px 0}.bar i{display:block;height:100%;background:var(--gt)}
+.msg{max-width:78%;padding:9px 12px;border-radius:14px;margin:6px 0;background:var(--card);border:1px solid var(--bd)}.msg.me{background:var(--pr);color:#fff;margin-left:auto;border:0}
+.st{display:flex;gap:12px;margin-bottom:18px}.dot{width:22px;height:22px;border-radius:50%;background:var(--bd);flex:none;display:grid;place-items:center;color:#fff;font-size:12px}.dot.on{background:var(--gt)}
+.hero{display:grid;place-items:center;text-align:center;min-height:70%;gap:6px}
+.logo{font-size:60px}
+</style></head><body><div id="app"></div>
+<script>
+const COLORS={Black:'#111',White:'#fff',Red:'#e53935',Blue:'#1f5eea',Green:'#2e9e4f',Yellow:'#f5c518',Purple:'#8e44ec',Brown:'#7a4a2a',Silver:'#b7bcc6'};
+const CATS=['Wallet','Mobile','Bag','Laptop','Keys','Documents','Other'];
+const EMO={Wallet:'👛',Mobile:'📱',Bag:'👜',Laptop:'💻',Keys:'🔑',Documents:'📄',Other:'📦'};
+const day=n=>{const d=new Date(2026,9,7-n);return d.toISOString().slice(0,10)};
+const fmt=s=>new Date(s).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+const SEED=[
+{id:'s1',type:'found',name:'Wallet (Brown Leather)',color:'Brown',cat:'Wallet',desc:'Brown leather wallet with brand logo. Found near college gate.',loc:'Puttur',date:day(4),seed:1,finder:'Rohan'},
+{id:'s2',type:'found',name:'Wallet (Brown)',color:'Brown',cat:'Wallet',desc:'Brown wallet with a few cards inside.',loc:'Mangalore',date:day(6),seed:1,finder:'Asha'},
+{id:'s3',type:'found',name:'Wallet (Dark Brown)',color:'Black',cat:'Wallet',desc:'Dark wallet, zip pocket, no cards.',loc:'Udupi',date:day(8),seed:1,finder:'Kiran'},
+{id:'s4',type:'found',name:'Keys (Silver)',color:'Silver',cat:'Keys',desc:'Silver key bunch with a blue keychain.',loc:'Puttur',date:day(2),seed:1,finder:'Meena'}];
+let S=load();
+function load(){try{const s=JSON.parse(localStorage.getItem('findit')||'null');if(s)return s}catch(e){}return{user:null,items:[],chats:{}}}
+function save(){try{localStorage.setItem('findit',JSON.stringify(S))}catch(e){}}
+let screen='splash',arg=null,stack=[],form={color:'Black'};
+const $=s=>document.querySelector(s);
+const all=()=>[...SEED,...S.items];
+const mine=t=>S.items.filter(i=>i.type===t);
+const tok=s=>new Set((s||'').toLowerCase().match(/[a-z0-9]+/g)||[]);
+function sim(a,b){const A=tok(a),B=tok(b);if(!A.size||!B.size)return 0;let n=0;A.forEach(x=>B.has(x)&&n++);return n/(A.size+B.size-n)}
+function score(l,f){
+ const img=(l.color===f.color?.6:0)+(l.cat===f.cat?.4:0);
+ const txt=Math.min(1,sim(l.name+' '+l.desc,f.name+' '+f.desc)*2.2);
+ const a=(l.loc||'').toLowerCase().trim(),b=(f.loc||'').toLowerCase().trim();
+ const loc=a&&a===b?1:(sim(a,b)>0?.6:.2);
+ const dd=Math.abs((new Date(l.date)-new Date(f.date))/864e5),time=1/(1+dd/3);
+ return{img,txt,loc,time,final:.5*img+.3*txt+.1*loc+.1*time}}
+function matches(l){return all().filter(f=>f.type==='found'&&f.id!==l.id&&f.cat===l.cat).map(f=>({f,s:score(l,f)})).filter(m=>m.s.final>=.4).sort((a,b)=>b.s.final-a.s.final)}
+function status(i){if(i.returned)return['Resolved','g'];if(i.type==='found')return['Submitted','g'];const n=matches(i).length;return n?[n+' Matches','b']:['Searching','']}
+function go(s,a,push=true){if(push)stack.push([screen,arg]);screen=s;arg=a;render()}
+function back(){const p=stack.pop();if(p){screen=p[0];arg=p[1];render()}}
+const photo=p=>p?`style="background-image:url(${p})"`:'';
+const th=i=>`<div class="th" ${photo(i.photo)}>${i.photo?'':EMO[i.cat]||'📦'}</div>`;
+const top=t=>`<div class="top"><button aria-label="Back" onclick="back()">←</button>${t}</div>`;
+function navbar(on){const t=[['home','🏠','Home'],['items','📋','My Items'],['matches','🔗','Matches'],['profile','👤','Profile']];
+ return'<nav>'+t.map(x=>`<button class="${on===x[0]?'on':''}" onclick="stack=[];go('${x[0]}',null,false)"><span>${x[1]}</span>${x[2]}</button>`).join('')+'</nav>'}
+function render(){
+ const A=$('#app'),f=V[screen]();A.innerHTML=f[0]+`<main>${f[1]}</main>`+(f[2]?navbar(f[2]):'');const m=A.querySelector('main');if(f[3])f[3](m);
+ const c=$('#chatlog');if(c)c.scrollTop=c.scrollHeight}
+function pick(inp,key){const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,360/im.width),c=document.createElement('canvas');c.width=im.width*k;c.height=im.height*k;c.getContext('2d').drawImage(im,0,0,c.width,c.height);form[key]=c.toDataURL('image/jpeg',.7);const u=$('#up');u.style.backgroundImage=`url(${form[key]})`;u.textContent=''};im.src=r.result};if(inp.files[0])r.readAsDataURL(inp.files[0])}
+function body(t){const L=t==='lost';
+ return`<label for="up">Photo</label><label class="up" id="up" ${photo(form.photo)} style="margin:0">${form.photo?'':'📷<br>Upload photo<br><span class="mu">Optional – improves matching</span>'}<input type="file" accept="image/*" hidden onchange="pick(this,'photo')"></label>
+ <label for="n">Item name *</label><input id="n" placeholder="e.g. Wallet, Mobile, Bag" value="${form.n||''}">
+ <label>Color</label><div class="row" style="flex-wrap:wrap">${Object.entries(COLORS).map(([k,v])=>`<button type="button" class="sw ${form.color===k?'on':''}" aria-label="${k}" style="background:${v}" onclick="form.color='${k}';sv();render()"></button>`).join('')}</div>
+ <label for="c">Category</label><select id="c">${CATS.map(c=>`<option ${form.c===c?'selected':''}>${c}</option>`).join('')}</select>
+ <label for="d">Description *</label><textarea id="d" rows="3" placeholder="Brand, model, text, condition, special marks">${form.d||''}</textarea>
+ <label for="l">${L?'Where did you lose it?':'Where did you find it?'} *</label><input id="l" placeholder="e.g. Puttur" value="${form.l||''}">
+ <label for="dt">Date</label><input id="dt" type="date" value="${form.dt||day(0)}">
+ ${L?`<label for="r">Additional requirements</label><input id="r" placeholder="Any specific requirements?" value="${form.r||''}">`:''}
+ <p id="err" class="mu" style="color:var(--rt)"></p>
+ <button class="btn" onclick="submitItem('${t}')">${L?'Submit Request':'Submit Found Item'}</button>`}
+function sv(){['n','c','d','l','dt','r'].forEach(k=>{const e=$('#'+k);if(e)form[k]=e.value})}
+function submitItem(t){sv();if(!form.n||!form.d||!form.l){$('#err').textContent='Please fill item name, description and location.';return}
+ const it={id:'u'+Date.now(),type:t,name:form.n,color:form.color,cat:form.c||'Wallet',desc:form.d,loc:form.l,date:form.dt||day(0),photo:form.photo||'',req:form.r||'',at:new Date().toISOString()};
+ S.items.unshift(it);save();form={color:'Black'};stack=[];go('done',it.id,false)}
+const V={
+splash:()=>['',`<div class="hero"><div class="logo">📍</div><h1>Find it.<br>Return it.<br>Together</h1><p class="mu">Lost today. Found tomorrow.</p><button class="btn" onclick="go('auth',null,false)">Get Started</button></div>`],
+auth:()=>['',`<div class="hero"><div class="logo">📍</div><h2>Welcome Back</h2><p class="mu">Sign in to continue</p>
+ <input id="em" placeholder="Email or phone number" aria-label="Email"><input id="pw" type="password" placeholder="Password" aria-label="Password">
+ <button class="btn" onclick="login()">Sign In</button><p class="mu">or</p>
+ <button class="btn o" onclick="login('Google')">Continue with Google</button><button class="btn o" onclick="login('Phone')">Continue with Phone</button>
+ <p class="mu">Demo app – any details work. Data stays in your browser.</p></div>`],
+home:()=>['',`<h2>Hi ${S.user||'there'} 👋</h2><p class="mu">Let's help people find their items!</p>
+ <button class="big" style="background:var(--gn)" onclick="form={color:'Black'};go('found')"><span style="font-size:30px">📤</span><b>I Found an Item</b>Help return a lost item</button>
+ <button class="big" style="background:var(--rd)" onclick="form={color:'Black'};go('lost')"><span style="font-size:30px">🔍</span><b>I Lost an Item</b>Raise a request and find it</button>`,'home'],
+found:()=>[top('Found Item Details'),body('found')],
+lost:()=>[top('Lost Item Request'),body('lost')],
+done:()=>{const i=S.items.find(x=>x.id===arg);return['',`<div class="hero"><div style="font-size:56px">✅</div><h2>Item Submitted Successfully!</h2>
+ <div class="card row" style="width:100%;text-align:left">${th(i)}<div><b>${i.name}</b><br><span class="mu">${i.type==='found'?'Found':'Lost'} item</span> <span class="pill g">Submitted</span></div></div>
+ <p class="mu">Your details are saved. We'll look for the best matches and notify you.</p>
+ ${i.type==='lost'&&matches(i).length?`<button class="btn" onclick="go('results','${i.id}',false)">See ${matches(i).length} matches</button>`:''}
+ <button class="btn ${i.type==='lost'&&matches(i).length?'o':''}" onclick="stack=[];go('home',null,false)">Go to Home</button><button class="btn o" onclick="stack=[];go('items',null,false)">View My Items</button></div>`]},
+items:()=>{const t=arg||'found';const L=mine(t);
+ return['',`<h2>My Items</h2><div class="tabs"><button class="${t==='found'?'on':''}" onclick="arg='found';render()">Found Items</button><button class="${t==='lost'?'on':''}" onclick="arg='lost';render()">My Requests</button></div>`+
+ (L.length?L.map(i=>{const s=status(i);return`<div class="card row" onclick="${i.type==='lost'?`go('results','${i.id}')`:''}" style="cursor:pointer">${th(i)}<div style="flex:1"><b>${i.name}</b><div class="mu">Submitted on ${fmt(i.at||i.date)}</div><span class="pill ${s[1]}">${s[0]}</span></div>›</div>`}).join(''):`<div class="card c mu">Nothing here yet. Tap Home to ${t==='found'?'report a found item':'raise a request'}.</div>`),'items']},
+matches:()=>{const L=mine('lost');return['',`<h2>Matches</h2>`+(L.length?L.map(i=>`<div class="card row" onclick="go('results','${i.id}')" style="cursor:pointer">${th(i)}<div style="flex:1"><b>${i.name}</b><br><span class="pill ${status(i)[1]}">${status(i)[0]}</span></div>›</div>`).join(''):'<div class="card c mu">Raise a lost-item request to see matches.</div>'),'matches']},
+results:()=>{const i=S.items.find(x=>x.id===arg),M=matches(i);
+ return[top('Match Results'),`<div class="card" style="background:#dce7ff;color:#14213d"><b>${M.length?`We found ${M.length} matching item${M.length>1?'s':''}!`:'No matches yet'}</b><br><span style="font-size:13px">${M.length?'Ranked by appearance, description, place and time.':'We will notify you when a similar item is reported.'}</span></div>
+ ${M.map(m=>`<div class="card row">${th(m.f)}<div style="flex:1"><b>${m.f.name}</b><div style="color:var(--gt);font-weight:700">Match Score: ${Math.round(m.s.final*100)}%</div><div class="mu">Found on: ${fmt(m.f.date)} · ${m.f.loc}</div><button class="btn" style="padding:8px;margin-top:6px" onclick="go('detail','${i.id}|${m.f.id}')">View Details</button></div></div>`).join('')}
+ <button class="btn o" onclick="go('status','${i.id}')">Track status</button>`]},
+detail:()=>{const[a,b]=arg.split('|'),l=S.items.find(x=>x.id===a),f=all().find(x=>x.id===b),s=score(l,f);
+ const bar=(n,v)=>`<div class="mu">${n} ${Math.round(v*100)}%</div><div class="bar"><i style="width:${v*100}%"></i></div>`;
+ return[top('Match Details'),`<div class="th" style="width:100%;height:170px;border-radius:14px" ${photo(f.photo)}>${f.photo?'':'<span style="font-size:60px">'+EMO[f.cat]+'</span>'}</div>
+ <h2 style="margin-top:12px">Item Information</h2><div class="card">${[['Name',f.name],['Color',f.color],['Category',f.cat],['Found date',fmt(f.date)],['Found location',f.loc],['Description',f.desc]].map(r=>`<div class="row" style="align-items:flex-start;margin-bottom:6px"><span class="mu" style="width:100px;flex:none">${r[0]}</span><span>${r[1]}</span></div>`).join('')}</div>
+ <b>Why it matched</b>${bar('Appearance (color & type)',s.img)}${bar('Description',s.txt)}${bar('Location',s.loc)}${bar('Time',s.time)}
+ <div id="ver"></div><div class="row"><button class="btn" onclick="go('chat','${arg}')">Contact Finder</button><button class="btn o" onclick="verify('${arg}')">Mark as Mine</button></div>`]},
+chat:()=>{const[a,b]=arg.split('|'),f=all().find(x=>x.id===b);const k=arg,M=S.chats[k]||(S.chats[k]=[['them','Hi, I found your '+f.cat.toLowerCase()+' near '+f.loc+'.']]);
+ return[top((f.finder||'Finder')+' (Finder)'),`<div id="chatlog" style="min-height:55vh">${M.map(m=>`<div class="msg ${m[0]==='me'?'me':''}">${m[1]}</div>`).join('')}</div>
+ <div class="row"><input id="mi" aria-label="Message" placeholder="Type a message..." onkeydown="event.key==='Enter'&&send('${k}')"><button class="btn" style="width:auto;margin:0" onclick="send('${k}')">Send</button></div>
+ <button class="btn o" onclick="go('status','${a}')">Track status</button>`]},
+status:()=>{const i=S.items.find(x=>x.id===arg),n=matches(i).length;const step=i.returned?5:i.contact?4:n?3:2;
+ const T=[['Request Submitted',fmt(i.at)],['Searching for Matches','Our matcher is checking the database'],['Matches Found','You will be notified'],['In Contact','Communicating with finder'],['Item Returned','Mark as completed']];
+ return[top('Request Status'),T.map((t,k)=>`<div class="st"><div class="dot ${k<step?'on':''}">${k<step?'✓':''}</div><div><b>${t[0]}</b><div class="mu">${t[1]}</div></div></div>`).join('')+(i.contact&&!i.returned?`<button class="btn" onclick="ret('${i.id}')">Mark as Returned</button>`:'')]},
+profile:()=>['',`<div class="c"><div class="th" style="width:84px;height:84px;margin:0 auto;font-size:40px">👤</div><h2>${S.user||'Guest'}</h2></div>
+ ${['My Items','Notifications','Settings','Help & Support'].map(x=>`<div class="card" onclick="${x==='My Items'?"go('items')":''}" style="cursor:pointer">${x}</div>`).join('')}
+ <button class="btn o" onclick="S.user=null;save();stack=[];go('auth',null,false)">Logout</button>`,'profile']
+};
+function login(m){const e=$('#em');S.user=(e&&e.value.trim().split(/[@\s]/)[0])||m||'Snehith';S.user=S.user[0].toUpperCase()+S.user.slice(1);save();go('home',null,false)}
+function send(k){const i=$('#mi');if(!i.value.trim())return;(S.chats[k]=S.chats[k]||[]).push(['me',i.value.trim()]);const[a]=k.split('|');const it=S.items.find(x=>x.id===a);it.contact=1;save();render();
+ setTimeout(()=>{S.chats[k].push(['them',"Sure. I'm free tomorrow at 4 PM near the main gate."]);save();if(screen==='chat')render()},900)}
+function verify(k){$('#ver').innerHTML=`<div class="card"><b>Verify ownership</b><p class="mu">Describe something only the owner would know (e.g. card inside, a mark, lock-screen).</p><input id="vq" aria-label="Private detail" placeholder="Your private detail"><button class="btn" onclick="doVerify('${k}')">Submit proof</button></div>`}
+function doVerify(k){const v=$('#vq').value.trim();if(v.length<4){$('#vq').placeholder='Please add a bit more detail';return}
+ const it=S.items.find(x=>x.id===k.split('|')[0]);it.contact=1;save();$('#ver').innerHTML='<div class="card" style="background:var(--gn)">✅ Proof sent to the finder. You can now coordinate the hand-off in chat.</div>'}
+function ret(id){const i=S.items.find(x=>x.id===id);i.returned=1;save();render()}
+render();
+</script></body></html>
